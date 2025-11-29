@@ -1,0 +1,206 @@
+:root {
+  font-family: "Inter", "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #0a0d14;
+  background-color: #060912;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #171d36, #060912 70%);
+  color: #f6f7fb;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 3rem;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+header {
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 0.25rem;
+  font-size: clamp(2rem, 8vw, 2.8rem);
+}
+
+.tagline {
+  margin: 0;
+  color: #c4c8f3;
+  font-size: 0.95rem;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  background: rgba(11, 16, 32, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 25px 45px rgba(3, 6, 15, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  resize: none;
+}
+
+textarea:focus {
+  outline: 2px solid #67e8f9;
+}
+
+.hint {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.9rem;
+  color: #9da7ff;
+}
+
+.error {
+  margin: 0 0 1rem;
+  min-height: 1.25rem;
+  color: #ff7675;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.85rem;
+  color: #8ca0ff;
+}
+
+.player {
+  margin: 0.2rem 0 1rem;
+  font-size: clamp(1.4rem, 6vw, 2.2rem);
+  font-weight: 700;
+}
+
+.word-panel {
+  margin: 1rem 0;
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  text-align: center;
+}
+
+.word-placeholder {
+  margin: 0 0 1rem;
+  font-size: clamp(1rem, 5vw, 1.4rem);
+  min-height: 2.5rem;
+}
+
+.word-placeholder.revealed {
+  color: #fcd34d;
+  font-size: clamp(1.2rem, 6vw, 1.8rem);
+}
+
+button {
+  width: 100%;
+  border: none;
+  border-radius: 50px;
+  padding: 0.85rem 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primary-button {
+  background: linear-gradient(120deg, #5b8dff, #6ef5e5);
+  color: #091028;
+}
+
+.ghost-button {
+  margin-top: 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: inherit;
+}
+
+.hold-button {
+  background: #0c152f;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f2f4ff;
+}
+
+.hold-button.holding::after {
+  content: "Halte weiter…";
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+  color: #8ca0ff;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.round-indicator {
+  margin: 0.5rem 0 0;
+  color: #9da7ff;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#start-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 1.5rem;
+  background: #101633;
+  color: #fff;
+  text-align: center;
+}
+
+#start-dialog::backdrop {
+  background: rgba(0, 6, 20, 0.7);
+}
+
+@media (min-width: 640px) {
+  textarea {
+    font-size: 1.05rem;
+  }
+
+  .card {
+    padding: 2rem;
+  }
+}

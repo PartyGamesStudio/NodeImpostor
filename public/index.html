@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Impostor – Partyspiel</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header>
+        <h1>Impostor</h1>
+        <p class="tagline">Mobilfreundliches Partyspiel für 3–15 Mitspieler.</p>
+      </header>
+      <main>
+        <section id="setup" class="card">
+          <h2>Spieler eingeben</h2>
+          <form id="player-form">
+            <label for="player-input">Namen mit Komma oder Zeilenumbruch trennen.</label>
+            <textarea
+              id="player-input"
+              rows="5"
+              placeholder="Anna, Ben, Carla, …"
+              required
+            ></textarea>
+            <p id="player-help" class="hint">Mindestens 3, maximal 15 Namen.</p>
+            <p id="form-error" class="error" aria-live="polite"></p>
+            <button type="submit" class="primary-button">Spiel vorbereiten</button>
+          </form>
+        </section>
+
+        <section id="game" class="card hidden" aria-live="polite">
+          <div class="game-info">
+            <p class="subtitle">Spieler am Zug</p>
+            <p id="current-player" class="player">–</p>
+          </div>
+          <div class="word-panel">
+            <p id="word-display" class="word-placeholder">Langes Tippen zeigt das Wort.</p>
+            <button id="reveal-button" class="hold-button" disabled>Wort zeigen (2 s halten)</button>
+          </div>
+          <p id="round-indicator" class="round-indicator"></p>
+          <div class="actions">
+            <button id="next-button" class="primary-button" disabled>Weiter</button>
+            <button id="restart-button" class="ghost-button hidden" type="button">Neue Runde</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="start-dialog">
+      <p>Das Spiel beginnt</p>
+      <button id="close-dialog" class="primary-button" type="button">Los geht's</button>
+    </dialog>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
