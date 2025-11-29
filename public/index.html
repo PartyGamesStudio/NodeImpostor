@@ -39,6 +39,7 @@
             <button id="reveal-button" class="hold-button" disabled>Wort zeigen (2 s halten)</button>
           </div>
           <p id="round-indicator" class="round-indicator"></p>
+          <p id="game-message" class="game-message" aria-live="polite"></p>
           <div class="actions">
             <button id="next-button" class="primary-button" disabled>Weiter</button>
             <button id="restart-button" class="ghost-button hidden" type="button">Neue Runde</button>
@@ -47,11 +48,7 @@
       </main>
     </div>
 
-    <dialog id="start-dialog">
-      <p>Das Spiel beginnt</p>
-      <button id="close-dialog" class="primary-button" type="button">Los geht's</button>
-    </dialog>
-
+    <script src="words.js" defer></script>
     <script src="app.js" defer></script>
   </body>
 </html>

@@ -117,6 +117,7 @@ textarea:focus {
   margin: 0 0 1rem;
   font-size: clamp(1rem, 5vw, 1.4rem);
   min-height: 2.5rem;
+  white-space: pre-line;
 }
 
 .word-placeholder.revealed {
@@ -176,6 +177,15 @@ button:disabled {
   margin: 0.5rem 0 0;
   color: #9da7ff;
   text-align: center;
+}
+
+.game-message {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  color: #fcd34d;
+  font-weight: 600;
+  font-size: 0.95rem;
+  min-height: 1.5rem;
 }
 
 .hidden {

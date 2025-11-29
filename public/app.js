@@ -1,72 +1,14 @@
-const wordPool = [
-  "Sternwarte",
-  "Mondschein",
-  "Wasserfall",
-  "Wolkenkratzer",
-  "Lagerfeuer",
-  "Schatzkarte",
-  "Zugbrücke",
-  "Teekanne",
-  "Schlüsselbund",
-  "Spiegelkabinett",
-  "Kieselstein",
-  "Unterseeboot",
-  "Zaubertrank",
-  "Wanderrucksack",
-  "Nebelhorn",
-  "Gartenparty",
-  "Himalaya",
-  "Zeitmaschine",
-  "Vulkan",
-  "Kompass",
-  "Schatztruhe",
-  "Regenschirm",
-  "Lichtschalter",
-  "Schneekugel",
-  "Kontrollzentrum",
-  "Bibliothek",
-  "Pixelkunst",
-  "Hängematte",
-  "Sonnenblume",
-  "Marktplatz",
-  "Kristallkugel",
-  "Schweizer Messer",
-  "Strandkorb",
-  "Zauberspiegel",
-  "Eisenbahn",
-  "Pinsel",
-  "Backofen",
-  "Gletscher",
-  "Obstsalat",
-  "Knäckebrot",
-  "Schwimmflügel",
-  "Luftschiff",
-  "Tintenfass",
-  "Muschel",
-  "Segelboot",
-  "Laterne",
-  "Sternschnuppe",
-  "Rettungsring",
-  "Kirschblüte",
-  "Zeltlager",
-  "Bergwerk",
-  "Nussknacker",
-  "Wüstenkarawane",
-  "Mosaik",
-  "Taschenlampe",
-  "Wassermelone",
-  "Hufabdruck",
-  "Nordlicht",
-  "Rathaus",
-  "Rakete"
-];
+const wordPool = window.wordPool || [];
 
 const state = {
   players: [],
   secretWord: "",
+  secretHint: "",
   impostorIndex: -1,
   currentIndex: 0,
-  wordRevealed: false
+  hasSeenWord: false,
+  wordVisible: false,
+  isCurrentImpostor: false
 };
 
 const selectors = {
@@ -80,9 +22,8 @@ const selectors = {
   revealButton: document.getElementById("reveal-button"),
   nextButton: document.getElementById("next-button"),
   roundIndicator: document.getElementById("round-indicator"),
-  restartButton: document.getElementById("restart-button"),
-  dialog: document.getElementById("start-dialog"),
-  dialogClose: document.getElementById("close-dialog")
+  gameMessage: document.getElementById("game-message"),
+  restartButton: document.getElementById("restart-button")
 };
 
 const HOLD_DURATION = 2000;
@@ -102,7 +43,7 @@ selectors.playerForm.addEventListener("submit", (event) => {
 });
 
 selectors.nextButton.addEventListener("click", () => {
-  if (!state.wordRevealed) {
+  if (!state.hasSeenWord) {
     return;
   }
   if (state.currentIndex >= state.players.length - 1) {
@@ -117,11 +58,9 @@ selectors.restartButton.addEventListener("click", () => {
   if (!state.players.length) {
     return;
   }
+  selectors.gameMessage.textContent = "";
   startNewRound();
-  hideDialog();
 });
-
-selectors.dialogClose?.addEventListener("click", () => hideDialog());
 
 function parsePlayerNames(rawValue) {
   return rawValue
@@ -139,33 +78,40 @@ function startGame(names) {
 }
 
 function startNewRound() {
-  state.secretWord = pickSecretWord();
+  const entry = pickSecretEntry();
+  state.secretWord = entry.word;
+  state.secretHint = entry.hint;
   state.impostorIndex = Math.floor(Math.random() * state.players.length);
   state.currentIndex = 0;
-  state.wordRevealed = false;
+  state.hasSeenWord = false;
+  state.wordVisible = false;
   selectors.revealButton.disabled = false;
   selectors.nextButton.disabled = true;
   selectors.restartButton.classList.add("hidden");
+  selectors.gameMessage.textContent = "";
   setPlaceholder("Langes Tippen zeigt das Wort.");
   updateRoundIndicator();
   updateCurrentPlayer();
 }
 
 function prepareTurn() {
-  state.wordRevealed = false;
+  state.hasSeenWord = false;
+  state.wordVisible = false;
   selectors.revealButton.disabled = false;
   selectors.nextButton.disabled = true;
+  selectors.gameMessage.textContent = "";
   setPlaceholder("Halten, um das Wort zu sehen.");
   updateRoundIndicator();
   updateCurrentPlayer();
 }
 
-function pickSecretWord() {
+function pickSecretEntry() {
   return wordPool[Math.floor(Math.random() * wordPool.length)];
 }
 
 function updateCurrentPlayer() {
   selectors.currentPlayer.textContent = state.players[state.currentIndex] || "–";
+  state.isCurrentImpostor = state.currentIndex === state.impostorIndex;
 }
 
 function updateRoundIndicator() {
@@ -178,39 +124,29 @@ function setPlaceholder(text) {
 }
 
 function revealSecret() {
-  const isImpostor = state.currentIndex === state.impostorIndex;
-  selectors.wordDisplay.textContent = isImpostor ? "Du bist der IMPOSTOR" : state.secretWord;
+  const text = state.isCurrentImpostor
+    ? `1Du bist der IMPOSTOR\nHinweis: ${state.secretHint}`
+    : state.secretWord;
+  selectors.wordDisplay.textContent = text;
   selectors.wordDisplay.classList.add("revealed");
-  selectors.revealButton.disabled = true;
   selectors.nextButton.disabled = false;
-  state.wordRevealed = true;
+  state.wordVisible = true;
+  state.hasSeenWord = true;
 }
 
 function finishRound() {
   selectors.revealButton.disabled = true;
   selectors.nextButton.disabled = true;
   selectors.restartButton.classList.remove("hidden");
-  showDialog();
-}
-
-function showDialog() {
-  const message = "Das Spiel beginnt";
-  if (selectors.dialog && typeof selectors.dialog.showModal === "function") {
-    selectors.dialog.showModal();
-  } else {
-    window.alert(message);
-  }
-}
-
-function hideDialog() {
-  if (selectors.dialog && typeof selectors.dialog.close === "function") {
-    selectors.dialog.close();
-  }
+  state.wordVisible = false;
+  selectors.wordDisplay.classList.remove("revealed");
+  selectors.wordDisplay.textContent = "Das Spiel beginnt!";
+  selectors.gameMessage.textContent = "Diskutiert gemeinsam und findet den Impostor. Tippt 'Neue Runde' für eine weitere Partie.";
 }
 
 const holdControls = {
   start() {
-    if (selectors.revealButton.disabled || state.wordRevealed) {
+    if (selectors.revealButton.disabled) {
       return;
     }
     holdActive = true;
@@ -222,16 +158,30 @@ const holdControls = {
       revealSecret();
     }, HOLD_DURATION);
   },
-  cancel() {
-    if (!holdActive) {
+  cancel() { // BBBB
+    if (holdActive) {
+      holdActive = false;
+      selectors.revealButton.classList.remove("holding");
+      window.clearTimeout(holdTimer);
+      setPlaceholder("Mindestens 2 Sekunden halten.");
       return;
     }
-    holdActive = false;
-    selectors.revealButton.classList.remove("holding");
-    window.clearTimeout(holdTimer);
-    setPlaceholder("Mindestens 2 Sekunden halten.");
+    if (state.wordVisible) {
+      selectors.revealButton.classList.remove("holding");
+      if (state.isCurrentImpostor) {
+        obscureWord(`Du bist der IMPOSTOR\nHinweis: ${state.secretHint}`);
+      } else {
+        obscureWord("Wort verborgen. Halte für Anzeige.");
+      }
+    }
   }
 };
+
+function obscureWord(message) {
+  state.wordVisible = false;
+  selectors.wordDisplay.classList.remove("revealed");
+  selectors.wordDisplay.textContent = message;
+}
 
 selectors.revealButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
