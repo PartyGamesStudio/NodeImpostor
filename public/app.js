@@ -421,6 +421,10 @@ selectors.revealButton.addEventListener("pointerdown", (event) => {
   selectors.revealButton.addEventListener(eventName, () => holdControls.cancel());
 });
 
+selectors.revealButton.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
+});
+
 populateCategoryOptions();
 hydrateCategoryFilter();
 hydratePlayerInputFromStorage();
