@@ -6,6 +6,7 @@ const state = {
   players: [],
   secretWord: "",
   secretHint: "",
+  secretHints: [],
   secretCategory: "",
   secretDifficulty: null,
   impostorIndex: -1,
@@ -13,7 +14,8 @@ const state = {
   hasSeenWord: false,
   wordVisible: false,
   isCurrentImpostor: false,
-  activeCategory: "all"
+  activeCategory: "all",
+  lastImpostorIndex: -1
 };
 
 const selectors = {
@@ -36,9 +38,10 @@ const selectors = {
   difficultyLabel: document.getElementById("word-difficulty")
 };
 
-const HOLD_DURATION = 2000;
+const HOLD_DURATION = 1500;
 let holdTimer = null;
 let holdActive = false;
+let activePointerId = null;
 
 selectors.playerForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -117,11 +120,13 @@ function startNewRound() {
     setPanelDisabled(true);
     return;
   }
+
   state.secretWord = entry.word;
-  state.secretHint = entry.hint;
+  state.secretHints = extractHints(entry);
+  state.secretHint = pickRandomHint(state.secretHints);
   state.secretCategory = entry.category || "Unbekannt";
   state.secretDifficulty = entry.difficulty ?? null;
-  state.impostorIndex = Math.floor(Math.random() * state.players.length);
+  state.impostorIndex = pickImpostorIndex(state.players.length);
   state.currentIndex = 0;
   state.hasSeenWord = false;
   state.wordVisible = false;
@@ -174,8 +179,9 @@ function setPlaceholder(text) {
 }
 
 function revealSecret() {
+  const hintText = state.secretHint || "Kein Hinweis verfügbar.";
   const text = state.isCurrentImpostor
-    ? `Du bist der IMPOSTOR\nHinweis: ${state.secretHint}`
+    ? `Du bist der IMPOSTOR\nHinweis: ${hintText}`
     : state.secretWord;
   selectors.wordDisplay.textContent = text;
   selectors.wordDisplay.classList.add("revealed");
@@ -197,34 +203,38 @@ function finishRound() {
 }
 
 const holdControls = {
-  start() {
+  start(event) {
     if (selectors.revealButton.disabled) {
       return;
     }
     holdActive = true;
+    activePointerId = event.pointerId;
+    if (typeof selectors.revealButton.setPointerCapture === "function") {
+      selectors.revealButton.setPointerCapture(activePointerId);
+    }
     selectors.revealButton.classList.add("holding");
-    setPlaceholder("Halte gedrückt…");
     holdTimer = window.setTimeout(() => {
       holdActive = false;
       selectors.revealButton.classList.remove("holding");
       revealSecret();
     }, HOLD_DURATION);
   },
-  cancel() {
+  cancel(event) {
+    if (event?.type === "pointerleave") {
+      return;
+    }
     if (holdActive) {
       holdActive = false;
+      releasePointerCapture();
       selectors.revealButton.classList.remove("holding");
       window.clearTimeout(holdTimer);
       setPlaceholder("Mindestens 2 Sekunden halten.");
       return;
     }
-    if (state.wordVisible) {
+    if (state.wordVisible && event?.type !== "pointerleave") {
       selectors.revealButton.classList.remove("holding");
-      if (state.isCurrentImpostor) {
-        obscureWord(`Du bist der IMPOSTOR\nHinweis: ${state.secretHint}`);
-      } else {
-        obscureWord("Wort verborgen. Halte für Anzeige.");
-      }
+      releasePointerCapture();
+      obscureWord("Wort verborgen. Halte für Anzeige.");
     }
   }
 };
@@ -239,6 +249,7 @@ function fullResetGame() {
   state.players = [];
   state.secretWord = "";
   state.secretHint = "";
+  state.secretHints = [];
   state.secretCategory = "";
   state.secretDifficulty = null;
   state.impostorIndex = -1;
@@ -262,6 +273,25 @@ function fullResetGame() {
   setPanelDisabled(true);
 }
 
+function extractHints(entry) {
+  if (!entry) {
+    return [];
+  }
+  const fromArray = Array.isArray(entry.hints) ? entry.hints : [];
+  const fallback = typeof entry.hint === "string" ? [entry.hint] : [];
+  return [...fromArray, ...fallback]
+    .map((hint) => (typeof hint === "string" ? hint.trim() : ""))
+    .filter(Boolean);
+}
+
+function pickRandomHint(hints) {
+  if (!Array.isArray(hints) || hints.length === 0) {
+    return "";
+  }
+  const index = Math.floor(Math.random() * hints.length);
+  return hints[index];
+}
+
 function renderMeta() {
   if (selectors.categoryLabel) {
     const categoryText = state.secretCategory ? `Kategorie: ${state.secretCategory}` : "Kategorie: –";
@@ -273,6 +303,28 @@ function renderMeta() {
       : "Schwierigkeit: –";
     selectors.difficultyLabel.textContent = difficultyText;
   }
+}
+
+function pickImpostorIndex(playerCount) {
+  if (playerCount <= 0) {
+    state.lastImpostorIndex = -1;
+    return -1;
+  }
+  if (playerCount === 1) {
+    state.lastImpostorIndex = 0;
+    return 0;
+  }
+  let index = Math.floor(Math.random() * playerCount);
+  if (state.lastImpostorIndex >= 0) {
+    const maxAttempts = 3;
+    let attempts = 0;
+    while (index === state.lastImpostorIndex && attempts < maxAttempts) {
+      index = Math.floor(Math.random() * playerCount);
+      attempts += 1;
+    }
+  }
+  state.lastImpostorIndex = index;
+  return index;
 }
 
 function getFilteredWordPool() {
@@ -401,6 +453,21 @@ function loadCategoryFromStorage() {
   }
 }
 
+function releasePointerCapture() {
+  if (!selectors.revealButton || typeof selectors.revealButton.releasePointerCapture !== "function") {
+    activePointerId = null;
+    return;
+  }
+  if (activePointerId !== null) {
+    try {
+      selectors.revealButton.releasePointerCapture(activePointerId);
+    } catch (error) {
+      console.warn("Konnte Pointer Capture nicht freigeben", error);
+    }
+    activePointerId = null;
+  }
+}
+
 function hydrateCategoryFilter() {
   const stored = loadCategoryFromStorage();
   if (!selectors.categorySelect) {
@@ -414,11 +481,11 @@ function hydrateCategoryFilter() {
 
 selectors.revealButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
-  holdControls.start();
+  holdControls.start(event);
 });
 
 ["pointerup", "pointerleave", "pointercancel"].forEach((eventName) => {
-  selectors.revealButton.addEventListener(eventName, () => holdControls.cancel());
+  selectors.revealButton.addEventListener(eventName, (event) => holdControls.cancel(event));
 });
 
 selectors.revealButton.addEventListener("contextmenu", (event) => {
