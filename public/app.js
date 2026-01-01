@@ -1,4 +1,6 @@
-const wordPool = window.wordPool || [];
+import wordPoolPromise from "./words/index.js";
+
+const wordPool = await wordPoolPromise;
 const PLAYER_STORAGE_KEY = "impostorPlayers";
 const CATEGORY_STORAGE_KEY = "impostorCategory";
 

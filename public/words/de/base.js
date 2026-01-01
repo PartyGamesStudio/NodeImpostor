@@ -1,4 +1,4 @@
-window.wordPool = [
+const deBaseWordPool = [
   { word: "Amphitheater", hints: ["Bühne", "Rangplätze", "Freiluft"], difficulty: 3, category: "Reise" },
   { word: "Anker", hints: ["Hafen", "Kette", "Festmachen"], difficulty: 1, category: "Reise" },
   { word: "Anzug", hints: ["Fest", "Krawatte", "Sakko"], difficulty: 1, category: "Alltag" },
@@ -112,3 +112,5 @@ window.wordPool = [
   { word: "Zeltlager", hints: ["Pfadfinder", "Feuerstelle", "Betreuer"], difficulty: 2, category: "Reise" },
   { word: "Zugbrücke", hints: ["Burgweg", "Ketten", "Graben"], difficulty: 2, category: "Reise" },
 ];
+
+export default deBaseWordPool;
