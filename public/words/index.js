@@ -1,5 +1,6 @@
 const supportedLanguages = {
-  de: () => import("./de/index.js")
+  de: () => import("./de/index.js"),
+  en: () => import("./en/index.js")
 };
 
 function resolveLanguage() {
